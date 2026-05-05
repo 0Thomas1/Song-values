@@ -2,12 +2,29 @@
 
 A machine learning pipeline that analyzes song lyrics and classifies them across 18 distinct moral and emotional themes using semantic embeddings and multi-label classification.
 
+> **🚀 NEW: FastText Upgrade Available!**
+>
+> We've created an improved pipeline using **FastText** and a larger **Kaggle dataset** for better performance and speed. See [FASTTEXT_UPGRADE_GUIDE.md](FASTTEXT_UPGRADE_GUIDE.md) for details.
+
 ## Overview
 
-This project uses a two-stage approach:
+This repository contains two implementations:
 
-1. **Data Generation**: LM Studio-powered analysis of lyrics to generate moral labels
-2. **Model Training**: Multi-label classification using semantic embeddings and logistic regression
+### Current Model (v1)
+
+- **Data**: 3,781 songs from Bruno Mars dataset
+- **Embeddings**: Sentence-Transformers (all-MiniLM-L6-v2)
+- **Classifier**: Multi-label Logistic Regression
+- **Performance**: F1-Score 0.61 (weighted)
+- **Status**: Production ready
+
+### Improved Model (v2) - FastText
+
+- **Data**: 50K+ songs from Kaggle (Genius lyrics)
+- **Algorithm**: FastText with multi-label support
+- **Benefits**: 10-100x faster, lower memory, better OOV handling
+- **Status**: Under development - see upgrade guide
+- **Expected**: F1-Score 0.70+ (estimated)
 
 ---
 
