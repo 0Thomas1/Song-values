@@ -4,3 +4,5 @@ __pycache__.py
 .DS_Store
 .env
 */kaggle_raw
+*/kaggle_lyrics_sample.csv
+models/*

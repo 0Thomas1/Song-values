@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 import fasttext
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, hamming_loss, accuracy_score
+from sklearn.metrics import classification_report, hamming_loss
 
 # ==========================================
 # Configuration
@@ -107,6 +107,19 @@ def format_fasttext_training_data(texts, labels, label_names):
     
     return formatted_data
 
+
+def predict_binary_vector(model, text, label_names, threshold=0.5):
+    """Predict a binary label vector using score thresholding."""
+    pred_labels, pred_scores = model.predict(text, k=len(label_names), threshold=0.0)
+    score_by_label = {
+        label.replace("__label__", ""): float(score)
+        for label, score in zip(pred_labels, pred_scores)
+    }
+    return np.array([
+        1 if score_by_label.get(label, 0.0) >= threshold else 0
+        for label in label_names
+    ])
+
 # ==========================================
 # Model Training
 # ==========================================
@@ -138,13 +151,13 @@ def train_fasttext_model(train_texts, test_texts, train_labels, test_labels):
         print("\nTraining model...")
         model = fasttext.train_supervised(
             input=train_file,
-            epoch=25,  # More epochs for multi-label
+            epoch=30,  # More epochs for multi-label
             lr=0.5,
-            wordNgrams=2,
+            wordNgrams=3,
             minn=3,  # Subword information
             maxn=6,
             dim=100,  # Embedding dimension
-            loss='multiloss',  # Multi-label loss function
+            loss='ova',  # One-vs-all for multi-label classification
             thread=4,
             verbose=2
         )
@@ -167,16 +180,18 @@ def train_fasttext_model(train_texts, test_texts, train_labels, test_labels):
         print("-" * 50)
         
         # Get predictions for detailed metrics
+        prediction_threshold = 0.5
         predictions = []
         ground_truth = []
         
         for i, text in enumerate(test_texts):
             processed_text = preprocess_text_for_fasttext(text)
-            prediction = model.predict(processed_text, k=len(MORAL_LABELS))
-            
-            # Convert FastText output to binary vector
-            pred_labels = set(label.replace("__label__", "") for label in prediction[0])
-            pred_vector = np.array([1 if label in pred_labels else 0 for label in MORAL_LABELS])
+            pred_vector = predict_binary_vector(
+                model,
+                processed_text,
+                MORAL_LABELS,
+                threshold=prediction_threshold,
+            )
             predictions.append(pred_vector)
             ground_truth.append(test_labels[i])
         
@@ -194,6 +209,7 @@ def train_fasttext_model(train_texts, test_texts, train_labels, test_labels):
         
         # Multi-label metrics
         print("\nMulti-Label Metrics:")
+        print(f"  Threshold: {prediction_threshold:.2f}")
         print(f"  Hamming Loss: {hamming_loss(ground_truth, predictions):.4f}")
         
         return model

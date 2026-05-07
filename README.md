@@ -181,7 +181,7 @@ The labels are organized as opposite pairs:
 install:
 
 ```bash
-pip install pandas numpy joblib sentence-transformers scikit-learn
+pip install -r requirements.txt
 ```
 
 ---
@@ -194,21 +194,18 @@ pip install pandas numpy joblib sentence-transformers scikit-learn
 ├── morale_classifier_v1.joblib          # Trained production model
 ├── synthesized_labels.jsonl             # Generated labels from LM Studio
 ├── data_generation/
-│   ├── data_generator.py                # Label generation script
-│   ├── lyrics/
-│   │   └── all_lyrics.csv              # Raw song data
-│   └── labels/
-│       └── bruno_Mars_labels.json       # Sample labels
+│   ├── label_kaggle_lyrics.py                # Label generation script
+│   ├── download_kaggle.py                     # Kaggle data download script
 └── training/
-    └── train.py                         # Main training pipeline
+    └── train_fasttext.py                         # Main training pipeline
 ```
 
 ---
 
 ## Status
 
-✅ **Training Complete**: Model ready for production inference
+✅ **Training Complete**, model saved, and ready for production use. See `inference_fasttext.py` for example usage.
 
-- 3,781 songs processed
-- 757 test samples evaluated
-- Weighted F1-Score: 0.61
+- 8060 songs processed
+- 1610 test samples evaluated
+- Weighted F1-Score: 0.6
