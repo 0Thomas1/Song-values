@@ -16,7 +16,11 @@ from sklearn.metrics import classification_report, hamming_loss, accuracy_score
 # ==========================================
 # Configuration
 # ==========================================
-CSV_PATH = "data_generation/kaggle_lyrics.csv"
+CSV_PATH_CANDIDATES = [
+    "data_generation/kaggle_lyrics_sample.csv",
+    "data_generation/kaggle_lyrics.csv",
+    "data_generation/lyrics/all_lyrics.csv",
+]
 JSONL_PATH = "kaggle_synthesized_labels.jsonl"
 MODEL_SAVE_DIR = "models/"
 MODEL_NAME = "morale_classifier_fasttext_v2"
@@ -38,9 +42,15 @@ MORAL_LABELS = [
 # ==========================================
 def load_and_merge_data():
     """Load lyrics and labels, merge on song ID."""
-    print(f"Loading {CSV_PATH} and {JSONL_PATH}...")
-    
-    df_lyrics = pd.read_csv(CSV_PATH)
+    csv_path = next((path for path in CSV_PATH_CANDIDATES if Path(path).exists()), None)
+    if csv_path is None:
+        raise FileNotFoundError(
+            "No lyrics CSV found. Expected one of: " + ", ".join(CSV_PATH_CANDIDATES)
+        )
+
+    print(f"Loading {csv_path} and {JSONL_PATH}...")
+
+    df_lyrics = pd.read_csv(csv_path)
     df_lyrics['song'] = df_lyrics['song'].astype(str)
     df_lyrics = df_lyrics.drop_duplicates(subset='song', keep='first')
     

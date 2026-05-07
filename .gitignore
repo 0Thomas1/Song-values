@@ -3,4 +3,4 @@ __pycache__.py
 .venv
 .DS_Store
 .env
-kaggle_raw/*
+*/kaggle_raw

@@ -11,10 +11,14 @@ SETUP REQUIRED:
 
 import os
 import json
-import pandas as pd
-import zipfile
 from pathlib import Path
 from dotenv import load_dotenv
+
+# Load .env BEFORE importing kaggle to ensure credentials are available
+load_dotenv()
+
+import pandas as pd
+import zipfile
 from kaggle.api.kaggle_api_extended import KaggleApi
 
 KAGGLE_DATASET = "carlosgdcj/genius-song-lyrics-with-language-information"
@@ -29,8 +33,6 @@ def download_kaggle_dataset_chunked(sample_size=10000):
     Get token from: https://www.kaggle.com/account
     """
     print(f"Connecting to Kaggle API...")
-    # Load .env if present
-    load_dotenv()
 
     # If credentials are present as env vars, write them to ~/.kaggle/kaggle.json
     env_user = os.getenv("KAGGLE_USERNAME")
@@ -107,8 +109,20 @@ def process_kaggle_data_sampled(sample_size=10000):
     print(f"Reading {raw_csv}...")
     # Read CSV with sampling for memory efficiency
     try:
-        # Method 1: Read all and sample
-        df = pd.read_csv(raw_csv)
+        # Try multiple encodings if utf-8 fails
+        df = None
+        for encoding in ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252']:
+            try:
+                df = pd.read_csv(raw_csv, encoding=encoding, on_bad_lines='skip')
+                print(f"  Successfully read with {encoding} encoding")
+                break
+            except Exception as enc_err:
+                continue
+        
+        if df is None:
+            print(f"Could not read CSV with any encoding")
+            return None
+            
         print(f"  Total songs in dataset: {len(df)}")
         
         # Sample N songs randomly
@@ -167,6 +181,23 @@ def main():
     print("Kaggle Dataset Download - Using Kaggle Library")
     print("="*70)
     print(f"Target: 10,000 songs (avoiding full 9.7GB download)\n")
+    
+    # Check if zip needs to be extracted
+    zip_files = list(DATA_DIR.glob("*.zip"))
+    if zip_files:
+        print("Step 0: Extract Kaggle dataset")
+        print("-" * 70)
+        for zip_file in zip_files:
+            print(f"Extracting {zip_file.name}...")
+            try:
+                with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                    zip_ref.extractall(DATA_DIR)
+                print(f"✓ Extraction complete")
+                # Don't delete the zip yet, in case we need it
+            except Exception as e:
+                print(f"✗ Extraction failed: {e}")
+                return False
+        print()
     
     # Check if already downloaded
     existing_csv = None

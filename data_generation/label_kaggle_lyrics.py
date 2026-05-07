@@ -71,16 +71,16 @@ Guidelines for accuracy:
 Format: Return ONLY valid JSON matching the provided schema.
 """
 
-PROCESSED_CSV = "data_generation/kaggle_lyrics.csv"
+PROCESSED_CSV = "data_generation/kaggle_lyrics_sample.csv"
 OUTPUT_JSONL = "kaggle_synthesized_labels.jsonl"
 CHECKPOINT_FILE = "data_generation/.kaggle_checkpoint.json"
 
-async def analyze_song(song_id: str, lyrics: str, semaphore: asyncio.Semaphore, output_file: str, model):
+async def analyze_song(song_id: str, lyrics: str, semaphore: asyncio.Semaphore, output_file: str, model, timeout: float = 60.0):
     """Analyzes a single song with rate-limiting and auto-saving."""
     async with semaphore:
         try:
-            # Truncate lyrics to avoid context overflow (Mistral can handle 4K tokens)
-            MAX_LYRIC_CHARS = 3000
+            # Truncate lyrics to avoid context overflow
+            MAX_LYRIC_CHARS = 2000
             cleaned_lyrics = " ".join(lyrics.split())
             if len(cleaned_lyrics) > MAX_LYRIC_CHARS:
                 cleaned_lyrics = cleaned_lyrics[:MAX_LYRIC_CHARS]
@@ -88,10 +88,10 @@ async def analyze_song(song_id: str, lyrics: str, semaphore: asyncio.Semaphore, 
             prompt = f"{SYSTEM_INSTRUCTION}\n\nLyrics:\n{cleaned_lyrics}"
             
             # Call LM Studio with structured output
-            # Timeout after 30 seconds per song
+            # Increase timeout to 60 seconds for slower models
             response = await asyncio.wait_for(
                 model.respond(prompt, response_format=MoralLabels),
-                timeout=30.0
+                timeout=timeout
             )
             
             labels = response.parsed
@@ -107,10 +107,13 @@ async def analyze_song(song_id: str, lyrics: str, semaphore: asyncio.Semaphore, 
             return result
             
         except asyncio.TimeoutError:
-            print(f"⚠ Timeout on song ID {song_id} (took >30s)")
+            print(f"⚠ Timeout on song ID {song_id} (took >{timeout}s)")
             return None
         except Exception as e:
-            print(f"⚠ Failed on song ID {song_id}. Error: {str(e)[:100]}")
+            error_msg = str(e)[:100]
+            # Skip spammy channel closed errors in output
+            if "channel" not in error_msg.lower():
+                print(f"⚠ Failed on song ID {song_id}. Error: {error_msg}")
             return None
 
 def load_checkpoint():
@@ -145,7 +148,7 @@ async def main():
     
     # Initialize LM Studio client
     print("Connecting to LM Studio...")
-    print("⚠️  Make sure LM Studio is running with Qwen 3.5 9B loaded!")
+    print("⚠️  Make sure LM Studio is running with a model loaded!")
     print("   LM Studio should be at: localhost:1234\n")
     
     async with lms.AsyncClient() as client:
@@ -153,17 +156,32 @@ async def main():
         model_name = getattr(model, 'name', 'Unknown Model')
         print(f"✓ Connected to model: {model_name}")
         
-        # Recommend optimal settings for Qwen
-        if "qwen" in model_name.lower():
-            print("  ✓ Qwen 3.5 9B detected - using optimal settings for your 6750 XT")
-            semaphore = asyncio.Semaphore(4)  # 4 concurrent (Qwen handles well)
-            print("  - Concurrent requests: 4")
-            print("  - Expected speed: ~15-20 tokens/sec")
-            print(f"  - ETA: ~{len(df) // 300:.0f}-{len(df) // 200:.0f} minutes for {len(df)} songs\n")
+        # Determine settings based on loaded model
+        model_lower = model_name.lower()
+        
+        if "qwen" in model_lower:
+            print("  ✓ Qwen detected - using Qwen-optimized settings")
+            semaphore = asyncio.Semaphore(6)  # Qwen handles concurrency well
+            timeout = 45.0  # Qwen is fast
+            print(f"  - Concurrent requests: 6")
+            print(f"  - Timeout: {timeout}s per song")
+            print(f"  - Expected speed: ~15-20 tokens/sec")
+            print(f"  - ETA: ~{len(df) // 250:.0f}-{len(df) // 150:.0f} minutes for {len(df)} songs\n")
+        elif "mistral" in model_lower:
+            print("  ✓ Mistral detected - using Mistral-optimized settings")
+            semaphore = asyncio.Semaphore(8)  # Mistral can handle more concurrency
+            timeout = 60.0  # Mistral is slower
+            print(f"  - Concurrent requests: 8")
+            print(f"  - Timeout: {timeout}s per song")
+            print(f"  - Expected speed: ~8-12 tokens/sec")
+            print(f"  - ETA: ~{len(df) // 150:.0f}-{len(df) // 80:.0f} minutes for {len(df)} songs\n")
         else:
-            print(f"  Model: {model_name}")
-            print("  ⚠️  Not Qwen 3.5 9B - adjust settings if needed")
-            semaphore = asyncio.Semaphore(3)
+            print(f"  ⚠️  Unknown model type: {model_name}")
+            print("  Using conservative default settings")
+            semaphore = asyncio.Semaphore(6)
+            timeout = 90.0
+            print(f"  - Concurrent requests: 8")
+            print(f"  - Timeout: {timeout}s per song\n")
         
         # Create tasks for all songs
         tasks = [
@@ -172,7 +190,8 @@ async def main():
                 lyrics=row['lyrics'],
                 semaphore=semaphore,
                 output_file=OUTPUT_JSONL,
-                model=model
+                model=model,
+                timeout=timeout
             )
             for _, row in df.iterrows()
         ]
@@ -192,7 +211,7 @@ async def main():
             else:
                 failed_count += 1
             
-            if completed % 50 == 0:
+            if completed % 100 == 0:
                 import time
                 elapsed = time.time() - start_time
                 rate = completed / elapsed
