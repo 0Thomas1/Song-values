@@ -1,20 +1,9 @@
 """
 Generate moral labels for Kaggle lyrics using LM Studio.
 
-MODEL: Qwen 3.5 9B
-- Speed: ~15-20 tokens/sec on AMD 6750 XT = ~20-30 min for 10K songs
-- Accuracy: Excellent (★★★★★)
-- Memory: ~12GB (perfect fit for 12GB VRAM)
-- Download: https://huggingface.co/Qwen/Qwen3.5-9B-Instruct
-
-WHY QWEN 3.5 9B:
-- Best instruction following for structured JSON output
-- Optimal VRAM usage for your 6750 XT
-- Fast enough for practical use (~15-20 tokens/sec)
-- Excellent accuracy for complex reasoning tasks like moral theme detection
 
 HOW TO USE:
-1. Download model in LM Studio: search 'Qwen/Qwen3.5-9B-Instruct'
+1. Download model in LM Studio
 2. Load it in LM Studio (will download automatically ~6GB)
 3. Make sure LM Studio is running on localhost:1234
 4. Run this script
