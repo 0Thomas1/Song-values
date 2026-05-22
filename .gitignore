@@ -1,4 +1,7 @@
-__pycache__.py
+*/__pycache__
 *.pyc
 .venv
 .DS_Store
+models/
+/dev
+.env

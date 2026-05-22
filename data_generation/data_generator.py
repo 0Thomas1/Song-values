@@ -1,3 +1,7 @@
+"""
+THIS SCRIPT IS USELESS NOW
+UNLESS YOU WANT TO SYNTHESISE LABELS FOR A NEW DATASET
+"""
 import pandas as pd
 import asyncio
 import json
