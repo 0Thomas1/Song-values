@@ -12,8 +12,8 @@ from sklearn.metrics import classification_report
 # ==========================================
 # 1. Configuration & Taxonomy
 # ==========================================
-CSV_PATH = "data_generation/kaggle_raw/song_lyrics.csv"
-JSONL_PATH = "synthesized_labels/kaggle_synthesized_labels.jsonl"
+CSV_PATH = "data_generation/kaggle_raw/kaggle_lyrics_sample.csv"
+JSONL_PATH = "sythesized_labels\kaggle_synthesized_labels.jsonl"
 MODEL_SAVE_PATH = "models/morale_classifier_v3_random_forest.joblib"
 
 # The exact order of these labels dictates the matrix shape. Do not change this order.
