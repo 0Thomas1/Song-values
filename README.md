@@ -21,6 +21,37 @@ This project now uses a two-stage approach:
 
 ## Output Artifact
 
+---
+
+## Training Usage
+
+Prepare a Python environment and install dependencies, then run the training script from the repository root.
+
+Install dependencies (recommended):
+
+```bash
+# create and activate a virtual environment (optional)
+python -m venv .venv
+# Windows (PowerShell)
+.\.venv\Scripts\Activate.ps1
+# macOS / Linux
+source .venv/bin/activate
+
+pip install -U pip
+pip install pandas numpy joblib scikit-learn
+```
+
+Run training:
+
+```bash
+python training/train.py
+```
+
+Notes:
+
+- Ensure your raw lyrics CSV and synthesized labels are available at the paths expected by `training/train.py` (see the top of that file for `CSV_PATH` and `JSONL_PATH`).
+- The training script will create a `models/` directory and save the trained bundle to `models/morale_classifier_v3_random_forest.joblib`.
+
 **File**: `models/morale_classifier_v3_random_forest.joblib`
 
 - **Type**: Scikit-learn serialized bundle (dict with `vectorizer` and `classifier`)
