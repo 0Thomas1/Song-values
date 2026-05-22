@@ -47,8 +47,10 @@ python training/inference.py models/morale_classifier_v3_random_forest.joblib --
 ### 3) Use a custom probability threshold
 
 ```bash
-python training/inference.py models/morale_classifier_v3_random_forest.joblib --text-file lyrics.txt --threshold 0.6 --pretty
+python training/inference.py models/morale_classifier_v3_random_forest.joblib --text-file lyrics.txt --threshold 0.65 --pretty
 ```
+
+Recommended: use `--threshold 0.65` for this model, as it currently gives the best practical results.
 
 The script outputs JSON with:
 
