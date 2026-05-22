@@ -3,5 +3,5 @@ __pycache__.py
 .venv
 .DS_Store
 models/
-kaggle_raw
+/dev
 .env
