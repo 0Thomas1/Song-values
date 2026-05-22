@@ -28,10 +28,37 @@ This project now uses a two-stage approach:
 
 ---
 
+## Inference Usage
+
+Run inference with the CLI script in `training/inference.py`.
+
+### 1) Predict from inline text
+
+```bash
+python training/inference.py models/morale_classifier_v3_random_forest.joblib --text "I love you and I feel peace and joy" --pretty
+```
+
+### 2) Predict from a text file
+
+```bash
+python training/inference.py models/morale_classifier_v3_random_forest.joblib --text-file lyrics.txt --pretty
+```
+
+### 3) Use a custom probability threshold
+
+```bash
+python training/inference.py models/morale_classifier_v3_random_forest.joblib --text-file lyrics.txt --threshold 0.6 --pretty
+```
+
+The script outputs JSON with:
+
+- `positive_labels`: labels predicted as true
+- `all_labels`: all 18 labels with predicted boolean values (and probabilities when available)
+
+---
+
 ## Notes
 
 - The repository now defaults to a pure scikit-learn pipeline to avoid PyTorch DLL issues on some Windows setups.
 - The training script saves the fitted `TfidfVectorizer` together with the `MultiOutputClassifier(RandomForestClassifier)` so that preprocessing is preserved for inference.
 - Older model artifacts (if present) include `morale_classifier_v1.joblib` and `models/morale_classifier_v2_sklearn.joblib`.
-
-
