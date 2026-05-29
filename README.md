@@ -1,10 +1,10 @@
-# Song Morale Classifier
+# LyricsLens
 
-A machine learning pipeline that analyzes song lyrics and classifies them across 18 moral and emotional themes. This repository now provides a scikit-learn-based training pipeline (TF-IDF + Random Forest) that avoids a PyTorch dependency.
+LyricsLens is a machine learning pipeline that analyzes song lyrics and classifies them across 18 moral and emotional themes. LyricsLens provides a scikit-learn-based training pipeline (TF-IDF + Random Forest) that avoids a PyTorch dependency.
 
 ## Model Training
 
-This project now uses a two-stage approach:
+LyricsLens uses a two-stage approach:
 
 1. **Data Generation**: LM Studio or other tooling to synthesize labels for songs
 2. **Model Training**: TF-IDF + RandomForest for multi-label classification
@@ -92,6 +92,6 @@ The script outputs JSON with:
 
 ## Notes
 
-- The repository now defaults to a pure scikit-learn pipeline to avoid PyTorch DLL issues on some Windows setups.
+- LyricsLens defaults to a pure scikit-learn pipeline to avoid PyTorch DLL issues on some Windows setups.
 - The training script saves the fitted `TfidfVectorizer` together with the `MultiOutputClassifier(RandomForestClassifier)` so that preprocessing is preserved for inference.
 - Older model artifacts (if present) include `morale_classifier_v1.joblib` and `models/morale_classifier_v2_sklearn.joblib`.
