@@ -13,7 +13,7 @@ from sklearn.metrics import classification_report
 # 1. Configuration & Taxonomy
 # ==========================================
 CSV_PATH = "data_generation/kaggle_raw/kaggle_lyrics_sample.csv"
-JSONL_PATH = "sythesized_labels\kaggle_synthesized_labels.jsonl"
+JSONL_PATH = "sythesized_labels/kaggle_synthesized_labels.jsonl"
 MODEL_SAVE_PATH = "models/morale_classifier_v3_random_forest.joblib"
 
 # The exact order of these labels dictates the matrix shape. Do not change this order.
@@ -84,7 +84,7 @@ def train_model():
     vectorizer = TfidfVectorizer(
         lowercase=True,
         stop_words="english",
-        ngram_range=(1, 2),
+        ngram_range=(3, 4),
         max_features=50000,
         min_df=2
     )
